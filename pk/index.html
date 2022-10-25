@@ -45,15 +45,17 @@
     <p>护甲:{{a.armor}}</p>
     <p>回血速度:<span :style="{color:(hxjz?'limegreen':'#000')}">{{(a.recover * (hxjz ? 0.33 : 1)).toFixed(2)}}</span>秒/血
     </p>
-    <p>被动技能:{{a.skill[0]}}%几率击晕{{a.skill[1]}}秒</p>
+    <span :style="{color:(dizzing?'lightskyblue':'#000')}">被动技能:{{a.skill[0]}}%几率击晕{{a.skill[1]}}秒</span>
+    <img :style="{visibility:(dizzing?'initial':'hidden')}" src="https://bkimg.cdn.bcebos.com/pic/08f790529822720e792d1d887bcb0a46f31fabe5" style="width: 25px;" alt=""/>
+    <br/><br/>
     <input v-model="mjzx" :disabled="aDead" type="checkbox" id="mjzx" style="cursor: pointer;"/><label for="mjzx"
                                                                                                        style="cursor: pointer;">敏捷之靴(攻速+20%)</label>
     <input v-model="hxjz" :disabled="aDead" type="checkbox" id="hxjz" style="cursor: pointer;"/><label for="hxjz"
                                                                                                        style="cursor: pointer;">回血戒指(回血速度+200%)</label>
     <br/>
     <div class="life-bar">
-        <div class="blood" :style="'width: ' + (100 * a.life / 1055) + '%;'"></div>
-        <div class="life-num">{{a.life}}/1055</div>
+        <div class="blood" :style="'width: ' + (100 * a.curLife / a.totalLife) + '%;'"></div>
+        <div class="life-num">{{a.curLife}}/{{a.totalLife}}</div>
     </div>
     <hr/>
     <b>剑圣</b>
@@ -65,15 +67,17 @@
     <p>攻速:{{b.speed}}秒/次</p>
     <p>护甲:<span :style="{color:(fyjz?'limegreen':'#000')}">{{(b.armor / (fyjz ? 1.2 : 1)).toFixed(2)}}</span></p>
     <p>回血速度:{{b.recover}}秒/血</p>
-    <p>被动技能:{{b.skill[0]}}%几率{{b.skill[1]}}倍暴击</p>
+    <span :style="{color:(hiting?'red':'#000')}">被动技能:{{b.skill[0]}}%几率{{b.skill[1]}}倍暴击</span>
+    <img :style="{visibility:(hiting?'initial':'hidden')}" src="https://bkimg.cdn.bcebos.com/pic/83025aafa40f4bfb2cb0b3ab004f78f0f63618e8" style="width: 25px;" alt=""/>
+    <br/><br/>
     <input v-model="gjzz" :disabled="bDead" type="checkbox" id="gjzz" style="cursor: pointer;"/><label for="gjzz"
                                                                                                        style="cursor: pointer;">攻击之爪(攻击力+12)</label>
     <input v-model="fyjz" :disabled="bDead" type="checkbox" id="fyjz" style="cursor: pointer;"/><label for="fyjz"
                                                                                                        style="cursor: pointer;">防御戒指(护甲+20%)</label>
     <br/>
     <div class="life-bar">
-        <div class="blood" :style="'width: ' + (100 * b.life / 833) + '%;'"></div>
-        <div class="life-num">{{b.life}}/833</div>
+        <div class="blood" :style="'width: ' + (100 * b.curLife / b.totalLife) + '%;'"></div>
+        <div class="life-num">{{b.curLife}}/{{b.totalLife}}</div>
     </div>
     <button style="width: 80px;cursor: pointer;" @click="pk()" :disabled="aDead || bDead || pking">PK</button>
 </div>
@@ -84,7 +88,8 @@
         data: {
             //山丘之王
             a: {
-                life: 1055,//生命值
+                totalLife: 1055,//总生命值
+                curLife: 1055,//当前生命值
                 recover: 1.19,//回血速度(n秒/血)
                 attack: [59, 68],//攻击力[下限,上限]
                 speed: 0.98,//攻速(n秒/次)
@@ -93,7 +98,8 @@
             },
             //剑圣
             b: {
-                life: 833,//生命值
+                totalLife: 833,//总生命值
+                curLife: 833,//当前生命值
                 recover: 1.73,//回血速度(n秒/血)
                 attack: [66, 75],//攻击力[下限,上限]
                 speed: 0.72,//攻速(n秒/次)
@@ -131,9 +137,9 @@
                                 this.dizzing = false;
                             }, this.a.skill[1] * 1000);
                         }
-                        let temp = this.b.life - (this.getRandomNum(this.a.attack[0], this.a.attack[1]) * (this.b.armor / (this.fyjz ? 1.2 : 1))).toFixed(0);
-                        this.b.life = temp < 0 ? 0 : temp;
-                        if (this.b.life === 0) {
+                        let temp = this.b.curLife - (this.getRandomNum(this.a.attack[0], this.a.attack[1]) * (this.b.armor / (this.fyjz ? 1.2 : 1))).toFixed(0);
+                        this.b.curLife = temp < 0 ? 0 : temp;
+                        if (this.b.curLife === 0) {
                             this.bDead = true;
                             this.pking = false;
                             clearInterval(this.aAb);
@@ -162,9 +168,9 @@
                                 this.hiting = false;
                             }, 1500);//暴击提示1.5秒
                         }
-                        let temp = this.a.life - (attack * this.a.armor).toFixed(0);
-                        this.a.life = temp < 0 ? 0 : temp;
-                        if (this.a.life === 0) {
+                        let temp = this.a.curLife - (attack * this.a.armor).toFixed(0);
+                        this.a.curLife = temp < 0 ? 0 : temp;
+                        if (this.a.curLife === 0) {
                             this.aDead = true;
                             this.pking = false;
                             clearInterval(this.aAb);
@@ -175,15 +181,15 @@
             },
             aRecover() {
                 this.aRecoverInterval = setInterval(() => {
-                    if (this.a.life > 0 && this.a.life < 1055) {
-                        this.a.life++;
+                    if (this.a.curLife > 0 && this.a.curLife < this.a.totalLife) {
+                        this.a.curLife++;
                     }
                 }, this.a.recover * (this.hxjz ? 0.3333 : 1) * 1000);
             },
             bRecover() {
                 setInterval(() => {
-                    if (this.b.life > 0 && this.b.life < 833) {
-                        this.b.life++;
+                    if (this.b.curLife > 0 && this.b.curLife < this.b.totalLife) {
+                        this.b.curLife++;
                     }
                 }, this.b.recover * 1000);
             },
