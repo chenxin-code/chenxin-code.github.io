@@ -1,1 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>魔兽英雄PK</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <style>
+        .life-bar {
+            width: 15%;
+            margin: 10px 15px;
+            height: 25px;
+            background-color: #fff;
+            border: 1px solid orange;
+            overflow: hidden;
+            position: relative;
+        }
 
+        .life-bar .blood {
+            height: 100%;
+            background-color: darkorange;
+        }
+
+        .life-bar .life-num {
+            width: 100%;
+            line-height: 25px;
+            color: #000;
+            font-size: 12px;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            position: absolute;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="VueBox">
+    <b>山丘之王</b>
+    <span style="color: darkgrey;" v-if="aDead">阵亡</span>
+    <p>攻击力:{{a.attack[0]}}~{{a.attack[1]}}</p>
+    <p>攻速:<span :style="{color:(mjzx?'limegreen':'#000')}">{{(a.speed * (mjzx ? 0.8 : 1)).toFixed(2)}}</span>秒/次</p>
+    <p>护甲:{{a.armor}}</p>
+    <p>回血速度:<span :style="{color:(hxjz?'limegreen':'#000')}">{{(a.recover * (hxjz ? 0.33 : 1)).toFixed(2)}}</span>秒/血
+    </p>
+    <p>被动技能:{{a.skill[0]}}%几率击晕{{a.skill[1]}}秒</p>
+    <input v-model="mjzx" :disabled="aDead" type="checkbox" id="mjzx" style="cursor: pointer;"/><label for="mjzx"
+                                                                                                       style="cursor: pointer;">敏捷之靴(攻速+20%)</label>
+    <input v-model="hxjz" :disabled="aDead" type="checkbox" id="hxjz" style="cursor: pointer;"/><label for="hxjz"
+                                                                                                       style="cursor: pointer;">回血戒指(回血速度+200%)</label>
+    <br/>
+    <div class="life-bar">
+        <div class="blood" :style="'width: ' + (100 * a.life / 1055) + '%;'"></div>
+        <div class="life-num">{{a.life}}/1055</div>
+    </div>
+    <hr/>
+    <b>剑圣</b>
+    <span style="color: darkgrey;" v-if="bDead">阵亡</span>
+    <span style="color: lightskyblue;" v-if="dizzing">晕</span>
+    <span style="color: red;" v-if="hiting">{{hitNum}}!</span>
+    <p>攻击力:<span :style="{color:(gjzz?'limegreen':'#000')}">{{b.attack[0] + (gjzz ? 12 : 0)}}</span>~<span
+            :style="{color:(gjzz?'limegreen':'#000')}">{{b.attack[1] + (gjzz ? 12 : 0)}}</span></p>
+    <p>攻速:{{b.speed}}秒/次</p>
+    <p>护甲:<span :style="{color:(fyjz?'limegreen':'#000')}">{{(b.armor / (fyjz ? 1.2 : 1)).toFixed(2)}}</span></p>
+    <p>回血速度:{{b.recover}}秒/血</p>
+    <p>被动技能:{{b.skill[0]}}%几率{{b.skill[1]}}倍暴击</p>
+    <input v-model="gjzz" :disabled="bDead" type="checkbox" id="gjzz" style="cursor: pointer;"/><label for="gjzz"
+                                                                                                       style="cursor: pointer;">攻击之爪(攻击力+12)</label>
+    <input v-model="fyjz" :disabled="bDead" type="checkbox" id="fyjz" style="cursor: pointer;"/><label for="fyjz"
+                                                                                                       style="cursor: pointer;">防御戒指(护甲+20%)</label>
+    <br/>
+    <div class="life-bar">
+        <div class="blood" :style="'width: ' + (100 * b.life / 833) + '%;'"></div>
+        <div class="life-num">{{b.life}}/833</div>
+    </div>
+    <button style="width: 80px;cursor: pointer;" @click="pk()" :disabled="aDead || bDead || pking">PK</button>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#VueBox',
+        data: {
+            //山丘之王
+            a: {
+                life: 1055,//生命值
+                recover: 1.19,//回血速度(n秒/血)
+                attack: [59, 68],//攻击力[下限,上限]
+                speed: 0.98,//攻速(n秒/次)
+                armor: 0.71,//护甲(0~1)
+                skill: [33, 1],//被动技能[几率%,击晕n秒]
+            },
+            //剑圣
+            b: {
+                life: 833,//生命值
+                recover: 1.73,//回血速度(n秒/血)
+                attack: [66, 75],//攻击力[下限,上限]
+                speed: 0.72,//攻速(n秒/次)
+                armor: 0.79,//护甲(0~1)
+                skill: [15, 4],//被动技能[几率%,n倍暴击]
+            },
+            aAb: null,
+            bAa: null,
+            aRecoverInterval: null,
+            aDead: false,
+            bDead: false,
+            pking: false,
+            dizzing: false,//b被击晕提示
+            hiting: false,//b暴击提示
+            hitNum: 0,//b暴击伤害
+            mjzx: false,//a是否携带敏捷之靴
+            hxjz: false,//a是否携带回血戒指
+            gjzz: false,//b是否携带攻击之爪
+            fyjz: false,//b是否携带防御戒指
+        },
+        methods: {
+            pk() {
+                this.pking = true;
+                this.attack('a', 'b');
+                this.attack('b', 'a');
+            },
+            attack(from, to) {
+                if (from === 'a' && to === 'b') {
+                    this.aAb = setInterval(() => {
+                        //击晕
+                        if (Math.ceil(Math.random() * 100) < this.a.skill[0]) {
+                            clearTimeout(this.bash);
+                            this.dizzing = true;
+                            this.bash = setTimeout(() => {
+                                this.dizzing = false;
+                            }, this.a.skill[1] * 1000);
+                        }
+                        let temp = this.b.life - (this.getRandomNum(this.a.attack[0], this.a.attack[1]) * (this.b.armor / (this.fyjz ? 1.2 : 1))).toFixed(0);
+                        this.b.life = temp < 0 ? 0 : temp;
+                        if (this.b.life === 0) {
+                            this.bDead = true;
+                            this.pking = false;
+                            clearInterval(this.aAb);
+                            clearInterval(this.bAa);
+                        }
+                    }, this.a.speed * (this.mjzx ? 0.8 : 1) * 1000);
+                } else if (from === 'b' && to === 'a') {
+                    this.bAa = setInterval(() => {
+                        //击晕
+                        if (this.dizzing) {
+                            return;
+                        }
+                        let gjzz;
+                        if (this.gjzz) {
+                            gjzz = 12;
+                        } else {
+                            gjzz = 0;
+                        }
+                        let attack = this.getRandomNum(this.b.attack[0] + gjzz, this.b.attack[1] + gjzz);
+                        //暴击
+                        if (Math.ceil(Math.random() * 100) < this.b.skill[0]) {
+                            attack = attack * this.b.skill[1];
+                            this.hitNum = attack;
+                            this.hiting = true;
+                            setTimeout(() => {
+                                this.hiting = false;
+                            }, 1500);//暴击提示1.5秒
+                        }
+                        let temp = this.a.life - (attack * this.a.armor).toFixed(0);
+                        this.a.life = temp < 0 ? 0 : temp;
+                        if (this.a.life === 0) {
+                            this.aDead = true;
+                            this.pking = false;
+                            clearInterval(this.aAb);
+                            clearInterval(this.bAa);
+                        }
+                    }, this.b.speed * 1000);
+                }
+            },
+            aRecover() {
+                this.aRecoverInterval = setInterval(() => {
+                    if (this.a.life > 0 && this.a.life < 1055) {
+                        this.a.life++;
+                    }
+                }, this.a.recover * (this.hxjz ? 0.3333 : 1) * 1000);
+            },
+            bRecover() {
+                setInterval(() => {
+                    if (this.b.life > 0 && this.b.life < 833) {
+                        this.b.life++;
+                    }
+                }, this.b.recover * 1000);
+            },
+            getRandomNum(m, n) {
+                return Math.floor((n + 1 - m) * Math.random() + m);
+            },
+        },
+        mounted() {
+            this.aRecover();
+            this.bRecover();
+        },
+        watch: {
+            mjzx() {
+                if (this.aAb && !this.aDead && !this.bDead) {
+                    clearInterval(this.aAb);
+                    this.attack('a', 'b');
+                }
+            },
+            hxjz() {
+                if (this.aRecoverInterval) {
+                    clearInterval(this.aRecoverInterval);
+                    this.aRecover();
+                }
+            },
+        },
+    });
+</script>
+</html>
