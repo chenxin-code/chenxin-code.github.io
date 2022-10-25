@@ -44,7 +44,7 @@
     <p>攻击力:{{a.attack[0]}}~{{a.attack[1]}}</p>
     <p>攻速:<span :style="{color:(mjzx?'limegreen':'#000')}">{{(a.speed * (mjzx ? 0.8 : 1)).toFixed(2)}}</span>秒/次</p>
     <p>护甲:{{a.armor}}</p>
-    <p>回血速度:<span :style="{color:(hxjz?'limegreen':'#000')}">{{(a.recover * (hxjz ? 0.33 : 1)).toFixed(2)}}</span>秒/血
+    <p>回血速度:<span :style="{color:(hxjz?'limegreen':'#000')}">{{(a.recover * (hxjz ? 0.2 : 1)).toFixed(2)}}</span>秒/血
     </p>
     <span :style="{color:(dizzing?'lightskyblue':'#000')}">被动技能:{{a.skill[0]}}%几率击晕{{a.skill[1]}}秒</span>
     <img :style="{visibility:(dizzing?'initial':'hidden')}" src="https://bkimg.cdn.bcebos.com/pic/08f790529822720e792d1d887bcb0a46f31fabe5" style="width: 25px;" alt=""/>
@@ -52,7 +52,7 @@
     <input v-model="mjzx" :disabled="aDead" type="checkbox" id="mjzx" style="cursor: pointer;"/><label for="mjzx"
                                                                                                        style="cursor: pointer;">敏捷之靴(攻速+20%)</label>
     <input v-model="hxjz" :disabled="aDead" type="checkbox" id="hxjz" style="cursor: pointer;"/><label for="hxjz"
-                                                                                                       style="cursor: pointer;">回血戒指(回血速度+200%)</label>
+                                                                                                       style="cursor: pointer;">回血戒指(回血速度+400%)</label>
     <br/>
     <div class="life-bar">
         <div class="blood" :style="'width: ' + (100 * a.curLife / a.totalLife) + '%;'"></div>
@@ -89,21 +89,21 @@
         data: {
             //山丘之王
             a: {
-                totalLife: 1055,//总生命值
-                curLife: 1055,//当前生命值
-                recover: 1.19,//回血速度(n秒/血)
+                totalLife: 1092,//总生命值
+                curLife: 1092,//当前生命值
+                recover: 1.03,//回血速度(n秒/血)
                 attack: [59, 68],//攻击力[下限,上限]
-                speed: 1.63,//攻速(n秒/次)
+                speed: 1.59,//攻速(n秒/次)
                 armor: 0.71,//护甲(0~1)
-                skill: [40, 1],//被动技能[几率%,击晕n秒]
+                skill: [40, 1.5],//被动技能[几率%,击晕n秒]
             },
             //剑圣
             b: {
-                totalLife: 833,//总生命值
-                curLife: 833,//当前生命值
+                totalLife: 852,//总生命值
+                curLife: 852,//当前生命值
                 recover: 1.73,//回血速度(n秒/血)
                 attack: [66, 75],//攻击力[下限,上限]
-                speed: 1.16,//攻速(n秒/次)
+                speed: 1.13,//攻速(n秒/次)
                 armor: 0.79,//护甲(0~1)
                 skill: [15, 4],//被动技能[几率%,n倍暴击]
             },
@@ -185,7 +185,7 @@
                     if (this.a.curLife > 0 && this.a.curLife < this.a.totalLife) {
                         this.a.curLife++;
                     }
-                }, this.a.recover * (this.hxjz ? 0.3333 : 1) * 1000);
+                }, this.a.recover * (this.hxjz ? 0.2 : 1) * 1000);
             },
             bRecover() {
                 setInterval(() => {
