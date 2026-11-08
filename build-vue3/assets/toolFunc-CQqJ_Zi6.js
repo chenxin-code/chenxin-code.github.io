@@ -1,0 +1,1 @@
+import{f as o,K as u}from"./index-Dnz-E7HT.js";function m(r=999){const e=o(0);let n;const a=()=>{e.value++,e.value<r&&(n=requestAnimationFrame(a))};return a(),u(()=>{cancelAnimationFrame(n)}),function(t){return e.value>=t}}export{m as d};
