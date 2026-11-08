@@ -1,0 +1,1 @@
+"use strict";const e=require("../../common/vendor.js"),t={data:()=>({title:"Hello"}),onLoad(){},methods:{goToTestApi(){e.index.navigateTo({url:"/pages/test-api/index"})}}};const o=e._export_sfc(t,[["render",function(t,o,i,n,s,r){return{a:e.t(s.title),b:e.o(((...e)=>r.goToTestApi&&r.goToTestApi(...e)))}}]]);wx.createPage(o);
