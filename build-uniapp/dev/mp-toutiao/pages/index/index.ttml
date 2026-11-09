@@ -1,1 +1,0 @@
-<view class="content"><image class="logo" src="/static/logo.png"></image><view class="text-area"><text class="title">{{a}}</text></view><button class="nav-btn" bindtap="{{b}}">API 测试页面</button></view>
