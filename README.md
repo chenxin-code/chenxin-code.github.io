@@ -10,6 +10,7 @@ GitHub Pages 静态站点，用于托管和展示多个前端项目的构建产�
 | Vue 3 Demo | [/build-vue3/](https://chenxin-code.github.io/build-vue3/) | Vue 3 + Vite |
 | React Demo | [/build-react/](https://chenxin-code.github.io/build-react/) | React + Vite |
 | UniApp Demo | [/build-uniapp/](https://chenxin-code.github.io/build-uniapp/) | UniApp + Vue 3 |
+| 微前端 Demo | [/qiankun-demo/](https://chenxin-code.github.io/qiankun-demo/) | qiankun + Vue/React/Angular |
 
 ## 访问方式
 
