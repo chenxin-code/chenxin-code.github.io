@@ -1,1 +1,0 @@
-import{_ as a,o as e,c as t,F as c,r as n,a as o}from"./index-Dnz-E7HT.js";const r={},_={class:"big-content-2-box"};function d(i,l){return e(),t("div",_,[(e(),t(c,null,n(9999,s=>o("div",{class:"item",key:s})),64))])}const m=a(r,[["render",d],["__scopeId","data-v-02a159e0"]]);export{m as default};
